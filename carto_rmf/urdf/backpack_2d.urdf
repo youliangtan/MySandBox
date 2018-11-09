@@ -1,0 +1,36 @@
+<robot name="cartographer_backpack_2d">
+  <material name="orange">
+    <color rgba="1.0 0.5 0.2 1" />
+  </material>
+  <material name="gray">
+    <color rgba="0.2 0.2 0.2 1" />
+  </material>
+
+  <link name="velodyne">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <cylinder length="0.05" radius="0.03" />
+      </geometry>
+      <material name="gray" />
+    </visual>
+  </link>
+
+  <link name="base_footprint" />
+
+  <link name="base_link" />
+
+  <joint name="velodyne_link_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="velodyne" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_footprint" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>
+

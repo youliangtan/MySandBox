@@ -1,0 +1,175 @@
+<html>
+<head>
+  <style>
+    h2 {
+    color: #051B66;
+    font-size: 50px;
+    text-align: center;
+    font-weight: bold;
+  }
+  /* useless */
+  body {
+    color: #16328F;
+    font-size: 30px;
+    text-align: center;
+    background-color: #cccccc;
+    font-weight: bold;
+  }
+
+  div.selection {
+    font-size: 32px;
+    margin: auto;
+    width: 25%;
+    color: white;
+    border: 3px solid #FFFFFF;
+    background-color: #5476E9;
+    padding: 10px;
+    font-weight: bold;
+  }
+
+  img {
+  display: block;
+  margin: 0 auto;
+  }
+
+  .button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+  }
+  .submitbutton {
+    background-color: #FF0000;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 20px 2px;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+  <h2>The Breakfast Preparation Robot</h2>
+  <img src="{{ url_for('static', filename = './breakfast.png') }}" id="image" hspace="80" style="width:304px;height:228px;">
+  <br>
+  <div class='selection'>
+    <p id="drink">TEA</p>
+    <p id="toastNum">0 TOAST</p>
+    <p id="eggNum">0 EGG</p>
+    <span id=result></span>
+    <br>  
+  </div>
+
+</body>
+<br>
+<button id="drinkBtn" class="button" onclick="drinkBtn()">COFFEE</button>
+
+<button id='AddToast' class="button" onclick="AddToastBtn()">Add Toast</button>
+<button id='LessToast' class="button" onclick="LessToastBtn()">Less Toast</button>
+
+<button id='AddEgg' class="button" onclick="AddEggBtn()">Add Egg</button>
+<button id='LessEgg' class="button" onclick="LessEggBtn()">Less Egg</button>
+
+<div>
+  <button id='submit'class="submitbutton" >Send selection!</button>
+</div>
+
+
+
+
+<script
+src="https://code.jquery.com/jquery-3.2.1.js"
+integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+crossorigin="anonymous"></script>
+
+<script>
+function drinkBtn() {
+    if ($("#drinkBtn").text() == 'COFFEE'){
+      $("#drinkBtn").html('TEA');
+      $("#drink").html('COFFEE');
+    }
+    else{
+      $("#drinkBtn").html('COFFEE');
+      $("#drink").html('TEA');     
+    }
+}
+
+function AddToastBtn(){
+  if (parseInt($("#toastNum").text())  < 2){
+    $("#toastNum").text( parseInt($("#toastNum").text()[0]) + 1 + " TOAST");
+  }
+  else{
+    $("#result").text("Toast Number Not more that 2!!");
+  }
+}
+
+function LessToastBtn(){
+  if (parseInt($("#toastNum").text())  > 0){
+    $("#toastNum").text( parseInt($("#toastNum").text()[0]) - 1 + " TOAST");
+  }
+  else{
+    $("#result").text("Toast Number Not Less that 0!!");
+  }
+}
+
+function AddEggBtn(){
+  if (parseInt($("#eggNum").text())  < 2){
+    $("#eggNum").text( parseInt($("#eggNum").text()[0]) + 1 + " EGG" );
+  }
+  else{
+    $("#result").text("Egg Number Not more that 2!!");
+  }
+}
+
+function LessEggBtn(){
+  if (parseInt($("#eggNum").text())  > 0){
+    $("#eggNum").text( parseInt($("#eggNum").text()[0]) - 1 + " EGG" );
+  }
+  else{
+    $("#result").text("Egg Number Not Less that 0!!");
+  }
+}
+
+function submit(){
+  window.location.href = '/display';
+  // '../'; //one level up
+  console.log("start");
+}
+
+$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+$(function() {
+  $('#submit').bind('click', function() {
+    $.getJSON($SCRIPT_ROOT + '/send', {
+      // a: $('input[name="num"]').val(),
+      eggNum: $('#eggNum').text()[0],
+      toastNum: $('#toastNum').text()[0],
+      drink: $('#drink').text()
+    }, function(data) {
+      $("#result").text(data.result);
+      // window.location.href = '/display';
+    });
+    setTimeout(submit, 2000);
+    return false;
+    // return url_for('display');
+  });
+
+  
+});
+
+
+</script>
+
+</html>

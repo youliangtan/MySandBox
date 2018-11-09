@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .big-btn {
+            font-size: 40px;
+            width: 400px;
+            height: 300px;
+            margin: 5px;
+        }
+
+        .middle {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="middle">
+    <button type="button" id="submit" class="big-btn btn btn-primary">Next</button>
+    <button type="button" class="big-btn btn btn-primary" href="192.168.8.103:5000">Dispense</button>
+    <br>
+    <button type="button" id="option1" class="big-btn btn btn-primary">1</button>
+    <button type="button" id="option2" class="big-btn btn btn-primary">2</button>
+    <span id=result></span>
+</div>
+</body>
+<script>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    $(function () {
+        $('#submit').bind('click', function () {
+            console.log("Please work");
+            $.getJSON("http://192.168.8.100:5000/next", {}, function (data) {
+                console.log(data);
+            });
+            return true;
+            // return url_for('display');
+        });
+
+        $('#option1').bind('click', function () {
+            console.log("Please work");
+            $.getJSON("http://192.168.8.100:5000/option1", {}, function (data) {
+                console.log(data);
+            });
+            return true;
+            // return url_for('display');
+        })
+
+        $('#option2').bind('click', function () {
+            console.log("Please work");
+            $.getJSON("http://192.168.8.100:5000/option2", {}, function (data) {
+                console.log(data);
+            });
+            return true;
+            // return url_for('display');
+        })
+    });
+
+</script>
+</html>

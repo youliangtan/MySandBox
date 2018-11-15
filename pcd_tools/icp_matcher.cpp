@@ -1,3 +1,11 @@
+/*
+
+  Created By Youliang Nov 2018
+  Testing of pcl matching
+  change parameter in icpMatching() function
+
+*/
+
 #include <iostream>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
@@ -12,6 +20,8 @@ void showHelp(char * program_name)
 {
   std::cout << std::endl;
   std::cout << "Usage: " << program_name << " [cloud1.pcd] [cloud2.pcd]" << std::endl;
+  std::cout << "\t\t first pointcloud being transformed to 2nd pointcloud  " << std::endl;
+
 }
 
 
@@ -19,8 +29,15 @@ void showHelp(char * program_name)
 Eigen::VectorXf icpMatching(const pcl::PointCloud<pcl::PointXYZ>::Ptr current_cloud, const pcl::PointCloud<pcl::PointXYZ>::Ptr prev_cloud){
   pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 
+  // https://stackoverflow.com/questions/37853423/point-cloud-registration-using-pcl-iterative-closest-point
   icp.setInputSource(current_cloud);
   icp.setInputTarget(prev_cloud);
+  icp.setMaximumIterations(100);
+  icp.setTransformationEpsilon (1e-9);
+  icp.setRANSACOutlierRejectionThreshold (0.005);
+  icp.setMaxCorrespondenceDistance (5);
+
+
   pcl::PointCloud<pcl::PointXYZ> Final;
   icp.align(Final);
 

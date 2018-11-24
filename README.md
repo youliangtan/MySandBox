@@ -17,6 +17,7 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 ### 4) PcdTools
 - with pcd/ply viewer
 - downsample .pcd file
+- pcl icp matcher
 
 ### 5) Google Cartographer launch file backup
 - carto_rmf package

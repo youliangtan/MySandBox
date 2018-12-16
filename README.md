@@ -23,7 +23,13 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 - config files and ROS launch for cartographer
 
 
+### 6) Mock ATM
+- ROS2 Python Script 
+- Pub and Sub custom defined msg, mock a AGV Task Manager
+- 2 ros2 packages, need to compile `colcon symlink.....`
+
+
 ....
 
 
-MORE TO DIE HERE, RIP!!
+MORE TO DIE HERE, RIP Codes!!

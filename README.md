@@ -24,11 +24,14 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 - config files and ROS launch for cartographer
 
 
-### 6) Mock ATM
+### 6) Mock ROS2 ATM
 - ROS2 Python Script 
 - Pub and Sub custom defined msg, mock a AGV Task Manager
 - 2 ros2 packages, need to compile `colcon symlink.....`
 
+
+### 7) ROS2 Payload
+- Testing pkg with cpp and py in one single pkg
 
 ....
 

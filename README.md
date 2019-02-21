@@ -1,5 +1,5 @@
 # My Sand Box
-This is just a graveyard of random codes. Nah... juz feel sad of deleting these, so a backup here might be a good idea. =)
+This is just a graveyard for random codes. Nah... juz feel sad of deleting these, so a backup here might be a good idea. =)
 
 ### 1) Vehicle Count
 - Using OpenCV background subtraction method to do simple vehicle count via a video footage

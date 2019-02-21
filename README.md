@@ -42,4 +42,4 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 ....
 
 
-MORE TO DIE HERE, RIP Codes!!
+MORE TO BURY HERE, RIP Codes!!

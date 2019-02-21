@@ -34,8 +34,10 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 - Testing pkg with cpp and py in one single pkg
 
 
-### 8) PCL OBJ Pose Estimation
-- line segmentation via ransac
+### 8) PCL OBJ Pose Estimation (100% ready to use)
+- line segmentation via ransac and clustering
+- filter then identify target line, then find its pose
+- refer to code for more info
 
 ....
 

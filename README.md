@@ -33,6 +33,10 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 ### 7) ROS2 Payload
 - Testing pkg with cpp and py in one single pkg
 
+
+### 8) PCL OBJ Pose Estimation
+- line segmentation via ransac
+
 ....
 
 

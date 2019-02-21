@@ -1,0 +1,27 @@
+# Created by: YouLiang
+# Date: Feb 2019
+# Description: Lidar Pose Estimation of Target Object
+#
+#############################################################
+
+
+
+# Clustering
+cluster_tolerance: 0.04 # in cm
+min_cluster_size: 20
+max_cluster_size: 25000
+
+
+# Ransac
+dist_coeff_factor: 2.7  # dist determine ransac tol
+
+
+# Target Line Pose Estimation
+region_of_interest:
+  x_min: -1
+  x_max: 1
+  y_min: -1
+  y_max: 1
+target_length: 0.50
+length_tolerance: 0.1
+min_num_points: 20

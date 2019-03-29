@@ -1,5 +1,5 @@
 # My Sand Box
-This is just a graveyard of random codes. Nah... juz feel sad of deleting these, so a backup here might be a good idea. =)
+This is just a graveyard for random codes. Nah... juz feel sad of deleting these, so a backup here might be a good idea. =)
 
 ### 1) Vehicle Count
 - Using OpenCV background subtraction method to do simple vehicle count via a video footage
@@ -34,10 +34,12 @@ This is just a graveyard of random codes. Nah... juz feel sad of deleting these,
 - Testing pkg with cpp and py in one single pkg
 
 
-### 8) PCL OBJ Pose Estimation
-- line segmentation via ransac
+### 8) PCL OBJ Pose Estimation (100% ready to use)
+- line segmentation via ransac and clustering
+- filter then identify target line, then find its pose
+- refer to code for more info
 
 ....
 
 
-MORE TO DIE HERE, RIP Codes!!
+MORE TO BURY HERE, RIP Codes!!

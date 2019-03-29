@@ -3,7 +3,7 @@
 Full version is in `object_pose_estimation` package, [here](https://github.com/tanyouliang95/object_pose_estimation).
 
 
-![alt text](/ransac.png?)
+![alt text](ransac.png?)
 
 
 ## Build

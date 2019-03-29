@@ -1,5 +1,7 @@
 # PCL Pose Estimation
 2D PCL as lib for finding target line, and pose estimation of the target line. Hokoyu collected .pcd file was used in this experiment.
+Full version is in `object_pose_estimation` package, [here](https://github.com/tanyouliang95/object_pose_estimation).
+
 
 ![alt text](/ransac.png?)
 

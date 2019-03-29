@@ -16,7 +16,7 @@
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-
+#include <pcl/search/impl/search.hpp>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_line.h>
 
@@ -62,41 +62,55 @@ struct LineDescriptor {
 };
 
 
-// TODO: addd param file
-
-
 // PCL Object Pose Estimation
 class ObjectPoseEstimate2D {
   private:
-    std::vector<LineDescriptor> *lines_descriptors;
-    Eigen::Vector3f target_pose;  // target object pose
     pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud;
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> *clusters_cloud;
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> *lines_cloud;
+    std::vector<LineDescriptor> *lines_descriptors;
+    Eigen::Vector3f TargetPose;
+    int target_line_idx;
 
     
     // TODO: Param stuffs
     YAML::Node config;
     Eigen::Vector4f roi_range; // Region of interest [x.min, x.max, y.min, y.max]
     float target_length, length_tolerance, min_num_points;
-    // )
+    bool enable_outliner_filtering;
+    float outliner_mean_k, dist_coeff_factor, ransac_dist_thresh, outliner_std_dev_factor; //line_fitting
+
 
   protected:    
-    
+
+    void objectClustering();
+
+    void lineFitting();
+
+    // called by line fitting    
     void getLinesDescriptors(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, Eigen::VectorXf coeff);
+
 
   public:
 
-    ObjectPoseEstimate2D();
+    ObjectPoseEstimate2D(std::string config_path);
     
-    std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr> objectClustering(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud);
+    void setInputCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
 
-    std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr> lineFitting(std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr > *clusters);
+    // Eigen[x, y, theta]
+    void getTargetPose( Eigen::Vector3f *target_pose);
 
-    pcl::visualization::PCLVisualizer::Ptr simpleVis (pcl::PointCloud<pcl::PointXYZ>::ConstPtr cloud, 
-                                                      std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr > *lines,
-                                                      std::vector< pcl::PointCloud<pcl::PointXYZ>::Ptr > *clusters
-                                                      );
+    // get target point cloud line
+    void getTargetPointCloud( pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
 
-    // @return: Eigen[x, y, theta]
-    Eigen::Vector3f getTargetPose();
+    // for visualization
+    pcl::visualization::PCLVisualizer::Ptr simpleVis ();
+
+    // TODO:
+    // getLinesPoints();
+    // getROI();
+    // getLinePoints();
 
 };

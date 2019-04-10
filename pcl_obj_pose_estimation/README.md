@@ -9,7 +9,6 @@ Full version is in `object_pose_estimation` package, [here](https://github.com/t
 ## Build
 
 ```
-mkdir build
 cd build
 cmake ..
 make

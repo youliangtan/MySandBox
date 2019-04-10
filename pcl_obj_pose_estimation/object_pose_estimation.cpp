@@ -1,11 +1,15 @@
 
 /* 
+ * CPP code on PCL execution of 'ObjectPoseEstimate2D' class, 
+ * 
  *  Created By: Tan You Liang, Feb 2019
- *  - for testing on ransac interested object identification and pose estimation
- *  - Created for Testing
+ *  - Run 2D pose estimation of a pointcloud input to find a targeted object (line)
+ *  - Utilized PCL lib in this class
+ *  - In main, single lidar scan of a input .pcd file is given.
+ *  - pcl simple visualization is used here (optional)
 */
 
-#include "object_pose_estimation.h"
+#include "object_pose_estimation.hpp"
 
 
 
@@ -18,10 +22,13 @@ ObjectPoseEstimate2D::ObjectPoseEstimate2D(std::string config_path){
   clusters_cloud = new std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>;
   lines_cloud = new std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>;
   lines_descriptors = new std::vector<LineDescriptor>;
+  targetPoseArray = new std::vector<Eigen::Vector3f>;
 
   // // ========= load param ============
 
   YAML::Node config = YAML::LoadFile(config_path);
+
+  std::cout << "Yeah!!!! YAML is Loaded ... \n" << std::endl;
 
   // Create PCL Clustering init
   ec.setClusterTolerance ( config["cluster_tolerance"].as<float>() );
@@ -44,10 +51,24 @@ ObjectPoseEstimate2D::ObjectPoseEstimate2D(std::string config_path){
   length_tolerance = config["length_tolerance"].as<float>(); 
   min_num_points = config["min_num_points"].as<int>();
 
+  // averaging filtering
+  averaging_span = config["averaging_span"].as<int>();
+  jump_score_thresh = config["jump_score_thresh"].as<float>(); 
+  jump_count_allowance = config["jump_count_allowance"].as<int>();
+
 }
 
 
-// PCL Visualizer
+// re initialize for every scan
+void ObjectPoseEstimate2D::reInit(){
+  input_cloud = (boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >) new pcl::PointCloud<pcl::PointXYZ>() ;
+  clusters_cloud = new std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>;
+  lines_cloud = new std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr>;
+  lines_descriptors = new std::vector<LineDescriptor>;
+}
+
+
+// PCL Visualizer, blocking while visualizing
 pcl::visualization::PCLVisualizer::Ptr ObjectPoseEstimate2D::simpleVis (){
 
   std::cout << " Start PCL Visualizer" << std::endl;
@@ -94,8 +115,8 @@ pcl::visualization::PCLVisualizer::Ptr ObjectPoseEstimate2D::simpleVis (){
     line_center.y = lines_descriptors->at(idx).mid_y;
     line_center.z = 0;
     viewer->addText3D(  "  line" + std::to_string(idx) + "\n  length : " + 
-                        std::to_string( lines_descriptors->at(idx).length ) + "\n  theta: " +
-                        std::to_string( lines_descriptors->at(idx).theta ), 
+                        std::to_string( lines_descriptors->at(idx).length ) + "\n  theta(degrees): " +
+                        std::to_string( lines_descriptors->at(idx).theta* 180 / PI ), 
                         line_center, 0.04, 0.0, 1.0, 0.0, 
                         "line"+ std::to_string(idx));
 
@@ -137,9 +158,9 @@ pcl::visualization::PCLVisualizer::Ptr ObjectPoseEstimate2D::simpleVis (){
 
 
 
-// identify all line's endpoints
-// 2D plane only
-// return pose
+// identify all line's endpoints, get line description for later evaluation
+// for 2D plane only
+// @return pose
 void ObjectPoseEstimate2D::getLinesDescriptors(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, Eigen::VectorXf coeff){
   
   //  ===================== get_line_endpoints ======================
@@ -194,7 +215,7 @@ void ObjectPoseEstimate2D::getLinesDescriptors(pcl::PointCloud<pcl::PointXYZ>::P
   line_desc.mid_y = (y_max + y_min )/2;
   line_desc.length = sqrt( (x_max - x_min)*(x_max - x_min) + (y_max - y_min)*(y_max - y_min) );
   line_desc.distance = sqrt( (line_desc.mid_x)*(line_desc.mid_x) + (line_desc.mid_y)*(line_desc.mid_y) );
-  line_desc.theta = atan (coeff[4]/coeff[3]) * 180 / PI;    // degrees
+  line_desc.theta = atan (coeff[4]/coeff[3]) ;    // degrees
 
   // update line description list datas
   lines_descriptors->push_back ( line_desc );
@@ -212,7 +233,7 @@ void ObjectPoseEstimate2D::objectClustering(){
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 
   // clusterize each plane
-  tree->setInputCloud (input_cloud); //TODO check if theres any use of kd tree func
+  tree->setInputCloud (input_cloud); 
   ec.setSearchMethod (tree);
   std::vector<pcl::PointIndices> cluster_indices;
   ec.setInputCloud (input_cloud);
@@ -290,10 +311,8 @@ void ObjectPoseEstimate2D::lineFitting(){
 }
   
 
-
-// get pose estimation
-// param input: roi_range[4], target_length, length_tolerance, min_num_points
-void ObjectPoseEstimate2D::getTargetPose( Eigen::Vector3f *target_pose ){
+// find pose estimation of target
+void ObjectPoseEstimate2D::findTargetPose(){
 
   float mid_x, mid_y, x_coor, y_coor, theta, length;
 
@@ -308,6 +327,7 @@ void ObjectPoseEstimate2D::getTargetPose( Eigen::Vector3f *target_pose ){
   for (int idx = 0; idx < lines_descriptors->size(); ++idx){
     
     // check x_y range 
+    // param input: roi_range[4], target_length, length_tolerance, min_num_points
     mid_x = lines_descriptors->at(idx).mid_x;
     mid_y = lines_descriptors->at(idx).mid_y;
 
@@ -326,43 +346,123 @@ void ObjectPoseEstimate2D::getTargetPose( Eigen::Vector3f *target_pose ){
     target_line_idx = idx;
     x_coor = mid_x;
     y_coor = mid_y;
-    theta = lines_descriptors->at(idx).theta;
-
+    theta = lines_descriptors->at(idx).theta + PI/2;
+    
+    // manage -ve senario
+    if (theta < PI/2) theta = PI+theta;
+    
+    std::cout<< " - Found Target Pose!! : " << x_coor << " " << y_coor << " " << theta << std::endl;
     break;
   }
 
-  (*target_pose)[0] = x_coor;
-  (*target_pose)[1] = y_coor;
-  (*target_pose)[2] = theta;
-  
-  TargetPose = *target_pose;
-  
+  TargetPose[0] = x_coor;
+  TargetPose[1] = y_coor;
+  TargetPose[2] = theta;
+
+  // For applyMovingAvgFiltering: buffer for target pose, for averaging
+  targetPoseArray->push_back(TargetPose);
+  // // after reachin avgin span, remove first ele of array before adding new ele
+  if (targetPoseArray->size() > averaging_span)   targetPoseArray->erase(targetPoseArray->begin());
+
+}
+
+
+// user get pose estimation
+void ObjectPoseEstimate2D::getTargetPose( Eigen::Vector3f *target_pose ){
+
+  (*target_pose)[0] = TargetPose[0];
+  (*target_pose)[1] = TargetPose[1];
+  (*target_pose)[2] = TargetPose[2];
+
 }
 
 
 
 void ObjectPoseEstimate2D::getTargetPointCloud( pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
-  if (target_line_idx != -1) *cloud = *(lines_cloud->at(target_line_idx));
+  if (target_line_idx != -1){
+    *cloud = *(lines_cloud->at(target_line_idx));
+  }
+  else{
+    pcl::PointCloud<pcl::PointXYZ>::Ptr empty (new pcl::PointCloud<pcl::PointXYZ>);
+    *cloud = *empty;
+  } 
 }
 
 
+// TODO: get region of interest
+void ObjectPoseEstimate2D::getROI(std::vector<Eigen::Vector3f> *roi_points){
+  // roi_range[0] = config["region_of_interest"]["x_min"].as<float>(); // [x.min, x.max, y.min, y.max]
+  // roi_range[1] = config["region_of_interest"]["x_max"].as<float>();;
+  // roi_range[2] = config["region_of_interest"]["y_min"].as<float>();;
+  // roi_range[3] = config["region_of_interest"]["y_max"].as<float>();;
+  std::cout<< "Getting region of interest" << std::endl;
+}
 
+
+// set input pointcloud
+// this func will run all those func related to target pose estimation
 void ObjectPoseEstimate2D::setInputCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud){
   input_cloud = cloud;
   std::cout << "[Obj Pose Estimation]::Num of Input Points: " << input_cloud->size () << "\n"<< std::endl;
   // pcl processing
   objectClustering();
   lineFitting();
+  findTargetPose();
+}
+
+
+// moving avg filtering
+// This function is important to create a low and high pass filter to smoothen the pose result while running in realtime inputs
+void ObjectPoseEstimate2D::applyMovingAvgFiltering(){
+
+  int array_size = targetPoseArray->size();
+  float jump_score = 0;
+
+  // **Pose jump filtering*
+  if (array_size >= 2){ // make sure there's prev pose to compare with current pose
+    Eigen::Vector3f targetPoseDiff = targetPoseArray->at(array_size-1) - targetPoseArray->at(array_size-2);
+    jump_score = targetPoseDiff.transpose()*targetPoseDiff; // sumation of the square of x, y, yaw 
+    std::cout << "## Jump score: " << jump_score << std::endl;
+  }
+
+  // check score, score > thresh means it's a jump
+  if (jump_score > jump_score_thresh){  
+    // check jump count on how many samples that have jumped
+    if (jump_count < jump_count_allowance )  { 
+      targetPoseArray->erase(targetPoseArray->end());
+      jump_count++;
+      std::cout << "## Increses jump count to " << jump_count << ", with pose array size: " << targetPoseArray->size() << std::endl;
+    }
+    else{
+      jump_count = 0;
+      targetPoseArray->erase(targetPoseArray->begin(), targetPoseArray->end()-1);
+      std::cout << "## Jump Reseted, with pose array size: " << targetPoseArray->size() << std::endl;
+    }
+  }
+  else jump_count = 0;
+
+  // **Moving Averaging Filtering*
+  Eigen::Vector3f target_pose_sums(0,0,0);
+  array_size = targetPoseArray->size();  // refind the array size
+
+  for( int i =0; i < array_size; i++){
+    target_pose_sums += targetPoseArray->at(i);
+  }
+
+  // update output targetPose
+  TargetPose[0] = target_pose_sums[0]/array_size;
+  TargetPose[1] = target_pose_sums[1]/array_size;
+  TargetPose[2] = target_pose_sums[2]/array_size;
+
+  std::cout << "Applyfiltering with size: " << array_size<< std::endl;
+  std::cout << "- Ouput Pose, x, y, theta: " << TargetPose[0] << " " << TargetPose[1] << " "<< TargetPose[2] << std::endl;
 }
 
 
 
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////// ------------------ Main Function ------------------- //////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// ------------------ Main Function ------------------- ////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 int main(int argc, char** argv)
@@ -392,11 +492,12 @@ int main(int argc, char** argv)
     std::cout<<"No Input PCD File, pls input via '-input' "<<std::endl;
     exit(0);
   }
-
+  
 
   // =============== Place class here =====================
-  ObjectPoseEstimate2D agv_laser_scan(config_path="../config.yaml");
+  ObjectPoseEstimate2D agv_laser_scan("../config.yaml");
   agv_laser_scan.setInputCloud(cloud);
+  // agv_laser_scan.applyMovingAvgFiltering(); // Use only on realtime multiple calls
   agv_laser_scan.getTargetPose(&target_pose);
   agv_laser_scan.getTargetPointCloud(target);
 

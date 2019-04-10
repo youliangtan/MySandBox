@@ -2,8 +2,10 @@
 # Date: Feb 2019
 # Description: Lidar Pose Estimation of Target Object
 #
+# Input param config file for `ObjectPoseEstimate2D` class
+#
 #############################################################
-
+# ** if yaml cant be read, check the path where was being run for the exe file
 
 
 # Clustering
@@ -13,17 +15,22 @@ max_cluster_size: 25000
 
 # Line Fitting
 ransac_dist_thresh: 0.04
-enable_outliner_filtering: False
-outliner_mean_k: 20
+enable_outliner_filtering: True
+outliner_mean_k: 10
 dist_coeff_factor: 3.7  # dist determine ransac tol
 outliner_std_dev_factor: 150
 
 # Target Line Pose Estimation
-region_of_interest:
-  x_min: 0.1
+region_of_interest:  # selected region of interest
+  x_min: 0.3
   x_max: 1.3
-  y_min: -0.7
-  y_max: 0.7
-target_length: 0.50
-length_tolerance: 0.3
-min_num_points: 20
+  y_min: -0.5
+  y_max: 0.5
+target_length: 0.78 # 0.51 chair     # target's length
+length_tolerance: 0.10   # + - target's length as allowance
+min_num_points: 80      # min number of point clouds to be a valid target
+
+#Dynamic Pose result filtering
+averaging_span: 10   # odd is preferable num, number of samples to avg
+jump_score_thresh: 0.2    # to counter the prob of outliner points
+jump_count_allowance: 6   # allow outliner to replace prev results after certain count

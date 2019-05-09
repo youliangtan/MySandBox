@@ -14,6 +14,10 @@ Drag the `marker_publisher.launch` to aruco_ros launch folder, then replace the 
 roslaunch aruco_ros marker_publisher.launch
 ```
 
+**if cam not working**
+- use command `v4l2-ctl -d /dev/video0 --list-formats-ext` to check cam specs
+- configure it in launch file
+
 ## notes
 - Refer to `rqt_graph.png` to checkout the nodes
 - Use `webcam.sh` to change default cam on /dev/video0.original, not use here, but useful

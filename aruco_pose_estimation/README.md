@@ -4,8 +4,11 @@
 - Opencv is installed with ROS, check if it's install via [here](https://stackoverflow.com/questions/8804064/find-opencv-version-installed-on-ubuntu)
 
 - ROS Pkg `aruco_ros` (gitpull and compile from src), link is [here](https://github.com/pal-robotics/aruco_ros)
-- ROS Pkg `usb_cam`   (apt install) `sudo apt-get install ros-melodic-usb-cam`
-
+- ROS Pkg `usb_cam`   (apt install), doc is [here](http://wiki.ros.org/usb_cam)
+  
+```
+sudo apt-get install ros-melodic-usb-cam
+```
 
 ## Run Code
 Drag the `marker_publisher.launch` to aruco_ros launch folder, then replace the original one (fornow, TODO)

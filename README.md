@@ -39,6 +39,8 @@ This is just a graveyard for random codes. Nah... juz feel sad of deleting these
 - filter then identify target line, then find its pose
 - refer to code for more info
 
+### 9) ROS Aruco Pose Estimation (raw)
+- raw launch file which documented what I have tested
 ....
 
 

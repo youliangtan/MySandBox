@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 SET(BUILD_SHARED_LIBS ON)
 
 
-find_package(PCL 1.2 REQUIRED)
+find_package(PCL 1.8 REQUIRED)
 find_package(YAML-CPP REQUIRED yaml-cpp)
 
 include_directories(${PCL_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIRS})

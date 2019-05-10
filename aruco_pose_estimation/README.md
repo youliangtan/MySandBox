@@ -2,7 +2,7 @@
 To Find the pose (tf) of detected Marker.
 
 <p align="center">
-  <img width="400" height="400" src="/rviz_display.gif">
+  <img width="400" height="400" src="rviz_display.gif">
 </p>
 
 ## Getting Started

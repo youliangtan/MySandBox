@@ -2,8 +2,10 @@
 To Find the pose (tf) of detected Marker.
 
 <p align="center">
-  <img width="400" height="400" src="/rviz_display.gif">
+  <img width="600" height="400" src="rviz_display.gif">
 </p>
+
+---
 
 ## Getting Started
 - Opencv is installed with ROS, check if it's install via [here](https://stackoverflow.com/questions/8804064/find-opencv-version-installed-on-ubuntu)
@@ -15,10 +17,11 @@ To Find the pose (tf) of detected Marker.
 sudo apt-get install ros-melodic-usb-cam
 ```
 
+---
 
 ## Camera Calibration
 
-Refer to OpenCV Camera Calibration code ([here](https://docs.opencv.org/2.4/doc/tutorials/calib3d/camera_calibration/camera_calibration.html#results)). This uses provided chessboard to calibrate.
+Refer to OpenCV Camera Calibration code ([here](https://docs.opencv.org/2.4/doc/tutorials/calib3d/camera_calibration/camera_calibration.html#results)). This tool has provided a chessboard.png for calibration.
 
 Compile by:
 ```
@@ -30,8 +33,9 @@ make -j4
 
 Follow the calibration steps, `distortion matrix` and `camera matrix` will be provided. Fill in the vals into `/config/usb_cam.yaml`
 
+---
 
-## Configure Camera
+## USB Cam Package
 
 Assume that normal webcam or usb cam is used, via `usb_cam` pkg. Some useful commands:
 
@@ -40,6 +44,7 @@ v4l2-ctl -d /dev/video0 --list-formats-ext  # to check cam specs and configure i
 webcam.sh                                   # to change default cam on /dev/video0.original, not use here, but useful
 ```
 
+---
 
 ## Run Aruco Pose Estimation Code
 

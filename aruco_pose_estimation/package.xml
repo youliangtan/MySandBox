@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>aruco_pose_estimation</name>
+  <version>0.2.3</version>
+  <description>Launch file based ros package for aruco pose estimation </description>
+  <maintainer email="tan_you_liang@hotmail.com">You Liang</maintainer>
+  <license>BSD</license>
+  <author email="tan_you_liang@hotmail.com">You Liang</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>cv_bridge</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>geometry_msgs</depend>
+  <depend>image_transport</depend>
+  <depend>roscpp</depend>
+  <depend>tf</depend>
+  <depend>aruco</depend>
+  <depend>aruco_msgs</depend>
+  <depend>aruco_ros</depend>
+  <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
+</package>

@@ -43,5 +43,8 @@ This is just a graveyard for random codes. Nah... juz feel sad of deleting these
 - raw launch file which documented what I have tested
 ....
 
+### 10) Simple VRP
+- using Google OR Tools to test out constraint and optimization problem
+
 
 MORE TO BURY HERE, RIP Codes!!

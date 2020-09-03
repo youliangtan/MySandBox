@@ -1,4 +1,9 @@
 
+/*
+  Duplication from here:
+  https://github.com/mxgrey/sandbox/blob/master/apps/test_TaskAllocation.cpp
+*/
+
 #include <map>
 #include <unordered_map>
 #include <vector>
@@ -210,7 +215,6 @@ Candidates Candidates::make(
 double g(const Node& n, bool details)
 {
   double output = 0.0;
-  details = true;
 
   std::size_t a = 0;
   for (const auto& agent : n.assignments)
@@ -536,13 +540,3 @@ int main()
 
   printf("Time taken: %.4fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 }
-
-
-// ========================================================
-// My own planning
-
-// using TaskRequest 
-
-// using RobotTaskQueue = std::queue<TaskRequest>
-
-// std::vector<std::vector<Assignment>> assignments;

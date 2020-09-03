@@ -509,14 +509,17 @@ int main()
     TravelTaskRequest::make({2, -30}),    // 4
     TravelTaskRequest::make({-2, 0}),    // 5 
     TravelTaskRequest::make({-7, -1}),    // 
-    TravelTaskRequest::make({6, 2})    // 
+    TravelTaskRequest::make({6, 2}),    // 
+    TravelTaskRequest::make({-6, -8})    // 
   };
 
   std::vector<State> initial_states =
   {
     State::make({0, 0}),
     State::make({5, 0}),
-    State::make({-3, 4})
+    State::make({-3, 4}),
+    State::make({-5, -4}),
+    State::make({-2, -8})
   };
 
   clock_t tStart = clock();

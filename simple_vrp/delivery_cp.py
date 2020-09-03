@@ -14,23 +14,28 @@ import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 
+from task_allocation_viz import TaskAllocationViz
+
 def create_data_model():
     """Stores the data for the problem."""
     data = {}
-    data['waypoints'] = [
-        (5, 5),         #// 0
-        (-5, 5),       #// 1
-        (10, -10),     #// 2
-        (1, 0),        #// 3
-        (2, -30),       #// 4
+    data['tasks'] = [ # aka Destination Waypoints
+        (5, 5),         # 0
+        (-5, 5),        # 1
+        (10, -10),      # 2
+        (1, 0),         # 3
+        (2, -30),       # 4
         (-2, 0),        # 5
-        (-7, -1),        #6      
-        (6, 2)          #7
+        (-7, -1),       # 6      
+        (6, 2),          # 7
+        # (-6, -8)          # 7
     ]
-    data['starts'] = [
-        (0, 0),         # origin 1
-        (5, 0),         # orgiin 2
-        (-3, 4),        # orgin 
+    data['agents'] = [
+        (0, 0),         # Agent 1
+        (5, 0),         # Agent 2
+        (-3, 4),        # Agent 3
+        # (-5, -4),        # Agent 3
+        # (-2, -8)        # Agent 3
     ]
     data['resolution'] = 1
     return data
@@ -55,7 +60,7 @@ def print_solution(data, manager, routing, solution):
     sum_route_distance = 0
     sum_cumul_distance = 0
     routes = []
-    num_vehicles = len(data['starts'])
+    num_vehicles = len(data['agents'])
     for vehicle_id in range(num_vehicles):
         cumul_distance = 0.0
         node_index = routing.Start(vehicle_id)
@@ -92,72 +97,15 @@ def print_solution(data, manager, routing, solution):
 
 ################################################################################
 
-class State:
-    travel_distance = 0.0
-    finish_time = 0.0
-    waypoints = []
-
-    def reset(self):
-        self.travel_distance = 0.0
-        self.finish_time = 0.0
-        self.waypoints = []
-
-def plot_route(data, routes): 
-    """plot routes"""
-    print("\n\n--------------- plotting Graph for validation --------------")
-    _, ax = plt.subplots()
-    ax.axis([-30, 30, -30, 30])
-    sum_cost = 0.0
-    sum_accum = 0.0
-
-    for idx, start in enumerate(data["starts"]):
-        plt.annotate("Veh " + str(idx), start)
-
-    for veh_num, route in enumerate(routes):
-        # starting point 
-        string_path_data = [(mpath.Path.MOVETO, data["starts"][veh_num])]
-        
-        for idx in route:
-            coor = data["waypoints"][idx]
-            string_path_data.append((mpath.Path.LINETO, coor))
-
-        codes, verts = zip(*string_path_data)
-        string_path = mpath.Path(verts, codes)
-        patch = mpatches.PathPatch(string_path, 
-            facecolor="none", edgecolor=np.random.rand(3,), lw=2)
-        ax.add_patch(patch)
-
-        # dumb way to validate and cal accum again
-        p_x = verts[0]
-        cost = 0
-        accum_cost = 0
-        for i, x in enumerate(verts):
-            if (i == 0):
-                continue;
-            d_cost = math.hypot(x[0] - p_x[0], x[1] - p_x[1])
-            accum_cost += cost + d_cost
-            cost += d_cost
-            p_x = x
-        print(" Total cost: {}, Accumulate cost {}".format(cost, accum_cost))
-        sum_cost += cost
-        sum_accum += accum_cost
-        
-    print(" Grand sum ==> Total cost: {}, Accumulate cost {}".format(
-        sum_cost, sum_accum))
-
-    plt.grid()
-    plt.show()
-
 def main():
     """Solve the VRP problem."""
     # Instantiate the data problem.
     data = create_data_model()
     start_time = time.time()
-    veh_state = State()
-    veh_state.reset()
 
-    data['locations'] = data['starts'] + data['waypoints']
-    num_vehicles = len(data['starts'])
+    plot_viz = TaskAllocationViz(data["agents"], data["tasks"])
+    data['locations'] = data['agents'] + data['tasks']
+    num_vehicles = len(data['agents'])
 
     """
     Uncomment this to validate toyproblem.cpp cost function
@@ -166,8 +114,14 @@ def main():
     #     [3,  5,  4],
     #     [7,  0,  2],
     #     [1,  6]
+    # --------------------
+    #     [3,  5], 
+    #     [7,  0],
+    #     [1,  6],
+    #     [8,  4],
+    #     [2]
     # ]
-    # plot_route(data, routes)
+    # plot_viz.plot_task_queues(routes)
     # return
 
     # Create the routing index manager.
@@ -183,35 +137,32 @@ def main():
                                                         data['resolution'])
 
     # Create and register a transit callback.
-    def distance_callback(from_index, to_index):
-        """Returns the distance between the two nodes."""
+    def transit_callback_fn(from_index, to_index):
+        """Returns the cost between the two nodes."""
         # Convert from routing variable Index to distance matrix NodeIndex.
         from_node = manager.IndexToNode(from_index)
         to_node = manager.IndexToNode(to_index)
-        # hack to force no cost to return back starting points 
-        # (to comply with routeindexmanager)
-        veh_state.waypoints.append(from_node)
+        # due hack to force no cost to return back starting points 
+        # (to comply with routeindexmanager ending points)
         if to_node in list(range(num_vehicles)):
-            # veh_state.reset()
             return 0
-        
-        cost = distance_matrix[from_node][to_node] # duration
+        # Current return distance as the only cost, TODO: add duration
+        cost = distance_matrix[from_node][to_node]
         return cost
 
-    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
+    transit_callback_index = routing.RegisterTransitCallback(transit_callback_fn)
 
     # Define cost of each arc.
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
-    dimension_name = 'Distance'
+    dimension_name = 'TransitCost'
     routing.AddDimension(
         transit_callback_index,
         0,  # no slack
         3000,  # vehicle maximum travel distance
         True,  # start cumul to zero
         dimension_name)
-    distance_dimension = routing.GetDimensionOrDie(dimension_name)
-    distance_dimension.SetGlobalSpanCostCoefficient(1)
+    routing.GetDimensionOrDie(dimension_name).SetGlobalSpanCostCoefficient(1)
 
     # Setting first solution heuristic.
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
@@ -225,13 +176,13 @@ def main():
 
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)
+    print("--- %s seconds ---" % (time.time() - start_time))
 
     # Print solution on console.
     if solution:
         routes = print_solution(data, manager, routing, solution)
-        plot_route(data, routes)
+        plot_viz.plot_task_queues(routes)
 
-    print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == '__main__':
     main()

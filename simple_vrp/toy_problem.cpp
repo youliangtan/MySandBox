@@ -510,7 +510,7 @@ int main()
     TravelTaskRequest::make({-2, 0}),    // 5 
     TravelTaskRequest::make({-7, -1}),    // 
     TravelTaskRequest::make({6, 2}),    // 
-    TravelTaskRequest::make({-6, -8})    // 
+    TravelTaskRequest::make({-6, -8})    // addition
   };
 
   std::vector<State> initial_states =

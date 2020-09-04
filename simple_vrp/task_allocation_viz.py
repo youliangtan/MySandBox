@@ -5,11 +5,39 @@ import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 
-class AgentTask:
-    def __init__(self):
-        self.finish_time = 0.0
-        self.duration = 0.0
-        self.travel_distance = 0.0
+################################################################################
+# NOT BEING USED NOW
+
+class RequestTask:
+    class Profile:
+        def __init__(self, task_id, location):
+            self.task_id = task_id
+            self.locaton = location
+            self.priority = False
+            self.time_window = (0,0)
+
+    class Plan:
+        def __init__(self):
+            self.travel_distance = 0.0  # location_T-1 to locatoin_T
+            self.duration = 0.0         # travel_distance/speed
+            self.finish_time = 0.0      # n_sum(durations)
+
+    def __init__(self, task_id, location):
+        self.profile = self.Profile(task_id, location)
+        self.plan = self.Plan()
+
+class Agent:
+    def __init__(self, agent_id, location):
+        self.agent_id = agent_id
+        self.locaton = location
+        self.speed = 1.0
+        self.assignments = []
+
+    def assign_task(self, task):
+        assert isinstance(task, RequestTask)
+        self.assignments.append(task)
+
+################################################################################
 
 class TaskAllocationViz:
 
@@ -29,6 +57,8 @@ class TaskAllocationViz:
         assert len(self.tasks) == num_tasks
         
         _, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.set_title("Agent Task Routes")
+        ax2.set_title("Agent Task Durations")
         ax1.axis([-30, 20, -30, 20])
         sum_cost = 0.0
         sum_accum = 0.0
@@ -57,7 +87,7 @@ class TaskAllocationViz:
             cost = 0
             accum_cost = 0
             for i, x in enumerate(verts):
-                if (i == 0): #ignore first
+                if (i == 0): #ignore agent's current position
                     continue
                 d_cost = math.hypot(x[0] - p_x[0], x[1] - p_x[1])
                 accum_cost += cost + d_cost

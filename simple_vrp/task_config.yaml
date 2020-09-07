@@ -1,0 +1,16 @@
+grid_size: 4
+grid_length: 10
+agents:
+ - {id: 1, wp: 13}
+ - {id: 2, wp: 2}
+tasks:
+ - {id: 1, pickup: 0, dropoff: 2}
+ - {id: 2, pickup: 15, dropoff: 2}
+ - {id: 3, pickup: 7, dropoff: 9}
+ - {id: 4, pickup: 8, dropoff: 11}
+ - {id: 5, pickup: 10, dropoff: 0}
+ - {id: 6, pickup: 4, dropoff: 8}
+ - {id: 7, pickup: 8, dropoff: 14}
+ - {id: 8, pickup: 5, dropoff: 11}
+ - {id: 9, pickup: 9, dropoff: 0}
+ - {id: 10, pickup: 1, dropoff: 3}

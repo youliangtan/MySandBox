@@ -6,6 +6,7 @@ import matplotlib.path as mpath
 import matplotlib.patches as mpatches
 import matplotlib.collections as mcoll
 
+import random
 import yaml
 
 ################################################################################
@@ -13,9 +14,9 @@ import yaml
 
 class RequestTask:
     class Profile:
-        def __init__(self, task_id, location):
+        def __init__(self, task_id, waypoints):
             self.task_id = task_id
-            self.locaton = location
+            self.waypoints = waypoints
             self.priority = False
             self.time_window = (0,0)
 
@@ -25,14 +26,14 @@ class RequestTask:
             self.duration = 0.0         # travel_distance/speed
             self.finish_time = 0.0      # n_sum(durations)
 
-    def __init__(self, task_id, location):
-        self.profile = self.Profile(task_id, location)
+    def __init__(self, task_id, waypoints):
+        self.profile = self.Profile(task_id, waypoints)
         self.plan = self.Plan()
 
 class Agent:
-    def __init__(self, agent_id, location):
+    def __init__(self, agent_id, waypoint):
         self.agent_id = agent_id
-        self.locaton = location
+        self.waypoint = waypoint
         self.speed = 1.0
         self.assignments = []
 
@@ -46,8 +47,8 @@ class TaskAllocationViz:
 
     def __init__(self, agents, tasks):
         """Init Task allocation viz"""
-        self.agents = agents
-        self.tasks = tasks
+        self.agents = agents    # [(x,y), (x, y).... ]
+        self.tasks = tasks      # [(x,y), (x, y).... ]
 
     def plot_task_queues(self, all_task_queues):
         """Plot task queues
@@ -78,8 +79,7 @@ class TaskAllocationViz:
                 verts.append(self.tasks[task_idx])
            
             string_path = mpath.Path(verts, codes)
-
-            colorline(ax1, string_path, cmap_idx=veh_num, linewidth=3)
+            self.colorline(ax1, string_path)
 
             # TODO Clean all these below
             # dumb way to validate and cal accum cost again
@@ -119,31 +119,27 @@ class TaskAllocationViz:
         plt.show()
 
 
-def colorline(ax, path, cmap_idx, linewidth=4, alpha=1.0):
-    """ Function to plot color gradient lines on graph """
-    verts = path.interpolated(steps=10).vertices
-    x, y = verts[:, 0], verts[:, 1]
-    z = np.linspace(0, 1, len(x))
-    cmaps = ['Oranges', 'Greens', 'Purples', 'Blues', 'Reds',
-            'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
-            'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
+    def colorline(self, ax, path, linewidth=4, alpha=1.0):
+        """ Function to plot color gradient lines on graph """
+        verts = path.interpolated(steps=10).vertices
+        x, y = verts[:, 0], verts[:, 1]
+        z = np.linspace(0, 1, len(x))
+        cmaps = ['Oranges', 'Greens', 'Purples', 'Blues', 'Reds',
+                'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+                'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']
+        
+        z = np.asarray(z)
+        points = np.array([x, y]).T.reshape(-1, 1, 2)
+        norm=plt.Normalize(0.0, 0.8)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+        lc = mcoll.LineCollection(segments, array=z, cmap=random.choice(cmaps), norm=norm,
+                                linewidth=linewidth, alpha=alpha)
 
-    # Special case if a single number:
-    if not hasattr(z, "__iter__"):  # to check for numerical input -- this is a hack
-        z = np.array([z])
+        ax.add_collection(lc)
 
-    z = np.asarray(z)
+################################################################################
 
-    points = np.array([x, y]).T.reshape(-1, 1, 2)
-    norm=plt.Normalize(0.0, 0.8)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    lc = mcoll.LineCollection(segments, array=z, cmap=cmaps[cmap_idx], norm=norm,
-                              linewidth=linewidth, alpha=alpha)
-
-    ax.add_collection(lc)
-
-
-def load_yaml(task_path, allocation_path=""):
+def load_yaml(task_path, allocation_path="", task_type="station"):
     """ Load Yaml to Visualize VRP """
     
     agents = []
@@ -156,6 +152,7 @@ def load_yaml(task_path, allocation_path=""):
         grid_length = task_config["grid_length"]
         graph = []
 
+        # Construct Grid World Graph
         for i in range(grid_size):
             for j in range(grid_size):
                 graph.append((i*grid_length, j*grid_length))
@@ -164,9 +161,15 @@ def load_yaml(task_path, allocation_path=""):
 
         for _agent in task_config["agents"]:
             agents.append(graph[_agent["wp"]])
-        for _task in task_config["tasks"]:
-            tasks.append(graph[_task["pickup"]])
-            tasks.append(graph[_task["dropoff"]])
+
+        # populate tasks
+        if task_type == "delivery":
+            for _task in task_config["tasks"]["delivery"]:
+                tasks.append(graph[_task["pickup"]])
+                tasks.append(graph[_task["dropoff"]])
+        elif task_type == "station":
+            for _task_idx in task_config["tasks"]["station"]:
+                tasks.append(graph[_task_idx])
 
     assert len(agents) != 0
     assert len(tasks) != 0
@@ -178,12 +181,15 @@ def load_yaml(task_path, allocation_path=""):
     # Delivery, thus abit tricky to dealt with
     with open(allocation_path, 'r') as stream:
         allocation_config = yaml.safe_load(stream)
-        task_queues = allocation_config["delivery"]
+        task_queues = allocation_config[task_type]
         for agent_idx, queue in enumerate(task_queues):
             allocation.append([])
             for task_idx in queue:
-                allocation[agent_idx].append(task_idx*2)
-                allocation[agent_idx].append(task_idx*2+1)
+                if (task_type == "delivery"):
+                    allocation[agent_idx].append(task_idx*2)
+                    allocation[agent_idx].append(task_idx*2+1)
+                elif (task_type == "station"):
+                    allocation[agent_idx].append(task_idx)
 
     return agents, tasks, allocation
 
@@ -191,6 +197,6 @@ def load_yaml(task_path, allocation_path=""):
 
 if __name__ == '__main__':
     agents, tasks, allocation = load_yaml(
-        "task_config.yaml", "allocation.yaml")
+        "task_config.yaml", "allocation.yaml", "delivery")
     plot_viz = TaskAllocationViz(agents, tasks)
     plot_viz.plot_task_queues(allocation)

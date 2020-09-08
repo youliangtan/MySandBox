@@ -10,42 +10,13 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 
 from task_allocation_viz import TaskAllocationViz
+from task_allocation_viz import load_yaml
 
-def create_data_model():
-    """Stores the data for the problem."""
-    data = {}
-    data['tasks'] = [ # aka Destination Waypoints
-        (5, 5),         # 0
-        (-5, 5),        # 1
-        (10, -10),      # 2
-        (1, 0),         # 3
-        (2, -30),       # 4
-        (-2, 0),        # 5
-        (-7, -1),       # 6      
-        (6, 2),          # 7
-        (-6, -8),          # 7
-    ]
-    data['agents'] = [
-        (0, 0),         # Agent 1
-        (5, 0),         # Agent 2
-        (-3, 4),        # Agent 3
-        (-5, -4),        # Agent 3
-        (-2, -8),        # Agent 3
-    ]
-    data['resolution'] = 1
-    return data
-
-# TODO
-def allocate_tasks(agents, tasks):
-    # generate plans here
-    return agents
-
-def print_solution(data, manager, routing, solution):
+def get_task_allocation(manager, routing, solution, num_agents):
     """Prints solution on console."""
     sum_route_distance = 0
     sum_cumul_distance = 0
     routes = []
-    num_agents = len(data['agents'])
     for vehicle_id in range(num_agents):
         cumul_distance = 0.0
         node_index = routing.Start(vehicle_id)
@@ -78,39 +49,23 @@ def print_solution(data, manager, routing, solution):
         print(' - Cumul Distance: {}m\n'.format(cumul_distance))
     print('Sum of the route distances: {}m'.format(sum_route_distance))
     print('Sum of the cumulated distances: {}m'.format(sum_cumul_distance))
-    return routes # aka tasks
+    return routes # aka tasks allocation
 
 ################################################################################
 
 def main():
     """Solve the VRP problem."""
     # Instantiate the data problem.
-    data = create_data_model()
+    
     start_time = time.time()
+    agents, tasks, _ = load_yaml("task_config.yaml")
 
-    plot_viz = TaskAllocationViz(data["agents"], data["tasks"])
-    data['locations'] = data['agents'] + data['tasks']
-    num_agents = len(data['agents'])
-
-    """
-    Uncomment this to validate toyproblem.cpp cost function
-    """
-    # tasks = [
-    #     # [3,  5,  4],
-    #     # [7,  0,  2],
-    #     # [1,  6]
-    # # --------------------
-    #     [3,  5], 
-    #     [7,  0],
-    #     [1,  6],
-    #     [8,  4],
-    #     [2]
-    # ]
-    # plot_viz.plot_task_queues(tasks)
-    # return
+    plot_viz = TaskAllocationViz(agents, tasks)
+    all_locations = agents + tasks
+    num_agents = len(agents)
 
     # Create the routing index manager.
-    manager = pywrapcp.RoutingIndexManager(len(data['locations']),
+    manager = pywrapcp.RoutingIndexManager(len(all_locations),
                                            num_agents,
                                            list(range(num_agents)),
                                            list(range(num_agents)))
@@ -130,15 +85,14 @@ def main():
             return 0
         # Current return distance as the only cost, TODO: add duration
                 # Euclidean distance
-        start = data['locations'][from_node] 
-        end = data['locations'][to_node]
+        start = all_locations[from_node] 
+        end = all_locations[to_node]
         travel_distance = math.hypot((start[0] - end[0]), (start[1] - end[1]))
         cost = travel_distance
         return cost
 
-    transit_callback_index = routing.RegisterTransitCallback(transit_callback_fn)
-
     # Define cost of each arc.
+    transit_callback_index = routing.RegisterTransitCallback(transit_callback_fn)
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
 
     dimension_name = 'TransitCost'
@@ -166,9 +120,8 @@ def main():
 
     # Print solution on console.
     if solution:
-        tasks = print_solution(data, manager, routing, solution)
-        plot_viz.plot_task_queues(tasks)
-
+        allocation = get_task_allocation(manager, routing, solution, num_agents)
+        plot_viz.plot_task_queues(allocation)
 
 if __name__ == '__main__':
     main()

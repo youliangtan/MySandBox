@@ -37,7 +37,6 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 
 
-#include <boost/thread/thread.hpp>
 #include <Eigen/Dense>
 
 #define PI 3.14159265
@@ -79,7 +78,8 @@ class ObjectPoseEstimate2D {
     Eigen::Vector4f roi_range; // Region of interest [x.min, x.max, y.min, y.max]
     float target_length, length_tolerance;
     bool enable_outliner_filtering;
-    float outliner_mean_k, dist_coeff_factor, ransac_dist_thresh, outliner_std_dev_factor; //line_fitting
+    float outliner_mean_k, dist_coeff_factor;
+    float ransac_dist_thresh, outliner_std_dev_factor; 
     int min_num_points, averaging_span,jump_count_allowance;
     float jump_score_thresh;
 
@@ -91,7 +91,8 @@ class ObjectPoseEstimate2D {
     void lineFitting();
 
     // called by line fitting    
-    void getLinesDescriptors(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, Eigen::VectorXf coeff);
+    void getLinesDescriptors(
+      pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, Eigen::VectorXf coeff);
 
     void findTargetPose();
 
@@ -104,7 +105,8 @@ class ObjectPoseEstimate2D {
     // @arg: input cloud for 2d line detection
     void setInputCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
 
-    // use when would like to avg the result, smoothern the curve , uses in multiple realtime inputs
+    // use when would like to avg the result, smoothern the curve , 
+    // uses in multiple realtime inputs
     // @param: tune with 'averaging_span, jump val' in config
     void applyMovingAvgFiltering();
 
@@ -126,6 +128,4 @@ class ObjectPoseEstimate2D {
     // TODO:
     // getLinesPoints();
     // getROI();
-
-
 };

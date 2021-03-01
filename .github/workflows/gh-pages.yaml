@@ -1,0 +1,22 @@
+name: github pages
+on:
+  push:
+    branches: [ test/static_files ]
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    container:
+      image: docker://ros:foxy-ros-base-focal
+    steps:
+    - name: workspace
+      run: |
+        mkdir -p rmf_ws/src
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        path: rmf_ws/MySandBox
+    - name: deploy_page
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: rmf_ws/MySandBox/dist

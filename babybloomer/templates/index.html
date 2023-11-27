@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <style>
+        h1 {
+            color: #333;
+            font-size: 30px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+            font-size: 15px;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        #uploadedImage {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 10px;
+            }
+        }
+        #response {
+            color: green;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+    <script>
+        function uploadImage() {
+            var formData = new FormData();
+            var imageFile = document.getElementById('image').files[0];
+            formData.append('image', imageFile);
+
+            console.log('Uploading image...' + imageFile.name);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.text())
+              .then(data => {
+                  document.getElementById('response').innerText = data;
+                  // Start checking for the processed image
+                  checkForImage(imageFile.name);
+              }).catch(error => {
+                  console.error('Error:', error);
+                  document.getElementById('response').innerText = 'Upload failed';
+              });
+
+            return false; // Prevent page refresh
+        }
+
+        function checkForImage(filename) {
+            var extensionIndex = filename.lastIndexOf('.');
+            var edited_filename = filename.substring(0, extensionIndex) + '-edit' + filename.substring(extensionIndex);
+            var imagePath = `uploads/${edited_filename}`;
+            var interval = setInterval(function() {
+                fetch(imagePath)
+                    .then(response => {
+                        if (response.ok) {
+                            clearInterval(interval);
+                            document.getElementById('uploadedImage').src = imagePath;
+                            document.getElementById('uploadedImage').style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Checking for image...');
+                    });
+            }, 3000); // Check every 3 seconds
+        }
+    </script>
+</head>
+<body>
+    <h1>Baby Bloomer</h1>
+    <div class="container">
+        <image src="/templates/logo.png" alt="logo" width="200" height="200">
+        <h2>Upload your scene and we will show you the hazards. (take image horizontally 😊 )</h2>
+        <form onsubmit="return uploadImage()">
+            <input type="file" name="image" id="image" accept="image/*">
+            <input type="submit" value="Upload">
+        </form>
+        <div id="response"></div>
+        <img id="uploadedImage" alt="Uploaded Image" style="display:none;"/>
+        <h2>*Disclaimer: MVP created during TechStar SF 2023</h2>
+    </div>
+</body>
+</html>

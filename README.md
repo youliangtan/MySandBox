@@ -47,4 +47,8 @@ This is just a graveyard for random codes. Nah... juz feel sad of deleting these
 - using Google OR Tools to test out constraint and optimization problem
 
 
+### 11) Baby Bloomer
+ - Simple GUI and Backend flask server for user to upload an image, and get object detection with hazardous object with YOLOv8
+ - Use `ngrok http 5000` to expose the local flask server to public testing
+
 MORE TO BURY HERE, RIP Codes!!

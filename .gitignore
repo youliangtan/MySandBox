@@ -1,0 +1,18 @@
+file_path = "/home/youliang/MySandBox/.gitignore"
+
+# Define the content of the .gitignore file
+content = """
+# Ignore compiled Python files
+*.pyc
+
+# Ignore virtual environment
+venv/
+
+# Ignore IDE files
+.idea/
+.vscode/
+"""
+
+# Create the .gitignore file and write the content to it
+with open(file_path, "w") as file:
+    file.write(content)

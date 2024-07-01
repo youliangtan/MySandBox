@@ -51,4 +51,7 @@ This is just a graveyard for random codes. Nah... juz feel sad of deleting these
  - Simple GUI and Backend flask server for user to upload an image, and get object detection with hazardous object with YOLOv8
  - Use `ngrok http 5000` to expose the local flask server to public testing
 
+### 12) ML
+ - a bunch of experimental ml code that i play around during my free time.
+
 MORE TO BURY HERE, RIP Codes!!

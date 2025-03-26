@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Stream</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Live Video Stream</h1>
+    <img id="videoStream" src="" alt="Video Stream" width="640" height="360" />
+
+    <script>
+        var socket = io('http://localhost:5000');  // Replace with actual backend URL
+
+        socket.on('video_frame', function(data) {
+            var image = document.getElementById('videoStream');
+            image.src = 'data:image/jpeg;base64,' + data.image_data;
+        });
+    </script>
+</body>
+</html>
